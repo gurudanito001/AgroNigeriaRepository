@@ -20,7 +20,7 @@ export default class UserController {
       if (!matchPasswords) {
         return res.status(401).send({
           success: false,
-          message: 'Not authorized'
+          message: 'Email and password does not match'
         });
       }
 
@@ -42,21 +42,33 @@ export default class UserController {
   };
 
   public register = async (req: Request, res: Response): Promise<any> => {
-    const { name, lastName, email, password } = req.body;
+    let { firstName, lastName, email, password } = req.body;
     try {
-      const hash = await bcrypt.hash(password, config.SALT_ROUNDS);
 
+      //const hash = await bcrypt.hash(password, config.SALT_ROUNDS);
+      const hash = async (text, size) => {
+        try {
+          const salt = await bcrypt.genSalt(size);
+          const hash = await bcrypt.hash(text, salt);
+          return hash
+        } catch (error) {
+          console.log(error)
+        }
+      }
+
+      let genHash = await hash(password, config.SALT_ROUNDS)
+      
       const user = new User({
-        name,
+        firstName,
         lastName,
         email,
-        password: hash
+        password: genHash
       });
 
       const newUser = await user.save();
 
       res.status(201).send({
-        success: false,
+        success: true,
         message: 'User Successfully created',
         data: newUser
       });

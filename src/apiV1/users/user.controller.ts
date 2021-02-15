@@ -5,6 +5,7 @@ import config from '../../config/config';
 import User from './user.model';
 
 export default class UserController {
+
   public findAll = async (req: Request, res: Response): Promise<any> => {
     try {
       const users = await User.find();
@@ -54,13 +55,13 @@ export default class UserController {
   };
 
   public update = async (req: Request, res: Response): Promise<any> => {
-    const { name, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password } = req.body;
     try {
       const userUpdated = await User.findByIdAndUpdate(
         req.params.id,
         {
           $set: {
-            name,
+            firstName,
             lastName,
             email,
             password
