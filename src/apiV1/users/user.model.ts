@@ -24,8 +24,13 @@ const UserSchema = new Schema(
       type: String,
       required: true,
       trim: true
+    },
+    resetLink: {
+      data: String,
+      default: ''
     }
   },
+  
   {
     timestamps: true,
     useNestedStrict: true

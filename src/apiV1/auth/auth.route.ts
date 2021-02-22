@@ -10,4 +10,8 @@ user.post('/authenticate', controller.authenticate);
 // Register New User
 user.post('/register', controller.register);
 
+user.put('/forgot-password', controller.forgotPassword)
+
+user.put('/reset-password', controller.resetPassword)
+
 export default user;

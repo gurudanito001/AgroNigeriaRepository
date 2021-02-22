@@ -8,6 +8,8 @@ const verifyToken = async (req, res, next): Promise<any> => {
     return res.status(403).send({ auth: false, message: 'No token provided.' });
   }
 
+  console.log(token)
+
   try {
     // verifies secret and checks exp
     const decoded = await jwt.verify(token, config.JWT_ENCRYPTION);
