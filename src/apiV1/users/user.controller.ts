@@ -55,7 +55,7 @@ export default class UserController {
   };
 
   public update = async (req: Request, res: Response): Promise<any> => {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, role, email } = req.body;
     try {
       const userUpdated = await User.findByIdAndUpdate(
         req.params.id,
@@ -63,8 +63,8 @@ export default class UserController {
           $set: {
             firstName,
             lastName,
-            email,
-            password
+            role,
+            email
           }
         },
         { new: true }
@@ -78,7 +78,7 @@ export default class UserController {
       }
       res.status(200).send({
         success: true,
-        data: userUpdated
+        message: "User updated Successfully"
       });
     } catch (err) {
       res.status(500).send({
@@ -100,7 +100,11 @@ export default class UserController {
           data: null
         });
       }
-      res.status(204).send();
+      res.status(200).send({
+        success: true,
+        message: 'User deleted successfully',
+        data: null
+      });
     } catch (err) {
       res.status(500).send({
         success: false,

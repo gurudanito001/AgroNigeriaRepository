@@ -16,6 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "@sendgrid/mail": "^7.4.2",
+    "aws-sdk": "^2.868.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.18.3",
     "constantinople": "^4.0.1",

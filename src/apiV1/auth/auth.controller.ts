@@ -6,6 +6,7 @@ import config from '../../config/config';
 import User from '../users/user.model';
 import { validateLoginInput } from '../validation/validateLogin';
 import sendResetEmail from '../services/nodemailer';
+import verifyRefreshToken from '../../helpers/verifyRefreshToken';
 
 
 export default class UserController {
@@ -15,7 +16,7 @@ export default class UserController {
     const { errorMessage, isValid } = validateLoginInput({ email, password });
     
     if (!isValid) {
-      return res.send({
+      return res.status(401).json({
         success: false,
         message: errorMessage
       });
@@ -25,28 +26,33 @@ export default class UserController {
       const user:any = await User.findOne({ email: req.body.email });
       
       if (!user) {
-        return res.send({
+        return  res.status(404).json({
           success: false,
           message: 'Invalid Username or Password'
         });
       }
 
       const matchPasswords = await bcrypt.compare(password, user.password);
+      console.log(matchPasswords)
       if (!matchPasswords) {
-        return res.send({
+        return res.status(404).json({
           success: false,
           message: 'Invalid Username or Password'
         });
       }
 
-      const token = await jwt.sign({ email }, config.JWT_ENCRYPTION, {
-        expiresIn: config.JWT_EXPIRATION
+      const accessToken = await jwt.sign({ email }, config.ACCESS_TOKEN_SECRET, {
+        expiresIn: '30s'
+      });
+
+      const refreshToken = await jwt.sign({ email }, config.REFRESH_TOKEN_SECRET, {
+        expiresIn: '1y'
       });
 
       res.status(200).send({
         success: true,
         message: 'Token generated Successfully',
-        data: token
+        data: { accessToken, refreshToken}
       });
     } catch (err) {
       res.status(500).send({
@@ -56,13 +62,57 @@ export default class UserController {
     }
   };
 
+  public refreshTokens = async (req: Request, res: Response): Promise<any> =>{
+
+    try{
+      const { refreshToken } = req.body
+
+      if (!refreshToken) {
+        res.status(400).send({
+          success: false,
+          message: 'Refresh Token Not Sent'
+        });
+      }
+
+      const email = await verifyRefreshToken(refreshToken)
+
+      if(!email){
+        res.status(400).send({
+          success: false,
+          message: 'Unauthorized'
+        })
+      }
+
+      const accessToken = await jwt.sign({ email }, config.ACCESS_TOKEN_SECRET, {
+        expiresIn: '30s'
+      });
+
+      const refToken = await jwt.sign({ email }, config.REFRESH_TOKEN_SECRET, {
+        expiresIn: '1y'
+      });
+
+      res.status(200).send({
+        success: true,
+        message: 'Token generated Successfully',
+        data: { accessToken: accessToken, refreshToken: refToken }
+      });
+
+    }catch(err){
+      res.status(500).send({
+        success: false,
+        message: err.toString()
+      });
+    }
+    
+  }
+
   public register = async (req: Request, res: Response): Promise<any> => {
-    let { firstName, lastName, email, password } = req.body;
+    let { firstName, lastName, role, email, password } = req.body;
 
     //check if user(email) already exists
-    const user:any = await User.findOne({ email: req.body.email });
+    const user:any = await User.findOne({ email });
     if (user) {
-      return res.status(400).send({
+      return res.status(400).json({
         success: false,
         message: 'User already exists'
       });
@@ -70,7 +120,7 @@ export default class UserController {
 
     //check if the password is more than 8 chars
     if(password.length < 8){
-      return res.status(400).send({
+      return res.status(400).json({
         success: false,
         message: 'Password must be 8 characters or more'
       });
@@ -92,6 +142,7 @@ export default class UserController {
       const user = new User({
         firstName,
         lastName,
+        role,
         email,
         password: genHash
       });
@@ -119,7 +170,7 @@ export default class UserController {
       const user:any = await User.findOne({ email });
       
       if(!user){
-        return res.status(200).send({
+        return res.status(400).json({
           success: false,
           message: 'User with Email does not exist'
         });
@@ -131,7 +182,7 @@ export default class UserController {
 
       user.updateOne({ resetLink: token }, (err, success) =>{
         if(err){
-          return res.status(200).send({
+          return res.status(400).json({
             success: false,
             message: 'Reset password link error'
           }); 
@@ -142,7 +193,10 @@ export default class UserController {
     //console.log(response)
     res.status(200).send(response)
     }catch (err) {
-      res.status(500).send(err);
+      res.status(500).json({
+        success: false,
+        message: err.toString()
+      });
     }
   };
 

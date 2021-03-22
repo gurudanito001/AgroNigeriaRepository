@@ -8,7 +8,7 @@ export default (async () => {
   try {
     await mongoose.connect(
       CONFIG.ATLAS_URI,
-      { useNewUrlParser: true, useUnifiedTopology: true }
+      { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false }
     );
     // listen for requests
     console.log('Database Conection is Ok');

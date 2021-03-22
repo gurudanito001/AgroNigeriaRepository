@@ -23,7 +23,7 @@ export function validateLoginInput(data: loginInput) {
   }
 
   return {
-    errorMessage,
-    isValid: Validator.isEmpty(errorMessage)
+    isValid: Validator.isEmpty(errorMessage),
+    errorMessage
   };
 }; 

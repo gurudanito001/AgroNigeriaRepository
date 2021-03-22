@@ -1,6 +1,7 @@
 import * as jwt from 'jwt-then';
 import config from '../config/config';
-const verifyToken = async (req, res, next): Promise<any> => {
+
+const verifyAccessToken = async (req, res, next): Promise<any> => {
   // check header or url parameters or post parameters for token
   const token: string = req.headers.authorization.split(' ')[1];
 
@@ -12,7 +13,7 @@ const verifyToken = async (req, res, next): Promise<any> => {
 
   try {
     // verifies secret and checks exp
-    const decoded = await jwt.verify(token, config.JWT_ENCRYPTION);
+    const decoded = await jwt.verify(token, config.ACCESS_TOKEN_SECRET);
     req.email = decoded.email;
     next();
   } catch (err) {
@@ -20,4 +21,4 @@ const verifyToken = async (req, res, next): Promise<any> => {
   }
 };
 
-export default verifyToken;
+export default verifyAccessToken;

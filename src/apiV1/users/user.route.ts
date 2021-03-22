@@ -1,20 +1,21 @@
 import { Router } from 'express';
-import verifyToken from '../../helpers/verifyToken';
+import verifyAccessToken from '../../helpers/verifyAccessToken';
 import Controller from './user.controller';
 
 const user: Router = Router();
 const controller = new Controller();
 
 // Retrieve all Users
-user.get('/', controller.findAll);
+user.get('/', verifyAccessToken, controller.findAll);
 
 // Retrieve a Specific User
-user.get('/:id', verifyToken, controller.findOne);
+user.get('/:id', verifyAccessToken, controller.findOne);
 
 // Update a User with Id
 user.put('/:id', controller.update);
 
 // Delete a User with Id
 user.delete('/:id', controller.remove);
+
 
 export default user;
